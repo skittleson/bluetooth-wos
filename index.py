@@ -50,7 +50,8 @@ import os
 
 class BleScannerInteractive:
 
-    def __init__(self) -> None:
+    def __init__(self, redacted_address=False) -> None:
+        self._redacted_address = redacted_address
         logging.basicConfig(
             filename='bluetooth-discovery.log', level=logging.DEBUG)
         self._logger = logging.getLogger(__name__)
@@ -294,7 +295,12 @@ class BleScannerInteractive:
             rendered_device_data = []
             device_data[0] = str(index)
             for i in range(0, len(device_data)):
-                rendered_device_data.append(Text(text=device_data[i]))
+                text = device_data[i]
+                
+                # redact addresses
+                if self._redacted_address == True and i == 1:
+                    text = text[:3] + '.' * (len(text) - 3)
+                rendered_device_data.append(Text(text=text))
 
             # tx power or services want to be found. highlight them
             style = ''
@@ -313,7 +319,8 @@ class BleScannerInteractive:
                     live.update(self._table)
         except KeyboardInterrupt as kie:
             self._console.print("Bye bye")
-            exit(0)
+       
+        exit(0)
 
         # while True:
         #     device_index = int(self._console.input(
@@ -322,5 +329,5 @@ class BleScannerInteractive:
 
 
 if __name__ == '__main__':
-    scanner = BleScannerInteractive()
+    scanner = BleScannerInteractive(redacted_address=True)
     asyncio.run(scanner.run())
