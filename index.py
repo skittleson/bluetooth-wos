@@ -48,6 +48,7 @@ from datetime import datetime
 import logging
 import os
 
+
 class BleScannerInteractive:
 
     def __init__(self, redacted_address=False) -> None:
@@ -77,6 +78,13 @@ class BleScannerInteractive:
         self._signal_propagation_constant = 8
         pass
 
+    def get_key_index(self, key: str, dict: dict):
+        keys = list(dict.keys())
+        try:
+            return keys.index(key)
+        except ValueError:
+            return -1  # Return -1 if key is not found
+
     def ensure_bluetooth_public_information_is_saved(self):
         def save(filename: str, url: str):
             if os.path.isfile(filename) == True:
@@ -89,7 +97,7 @@ class BleScannerInteractive:
             with open(filename, 'w', encoding='utf-8') as file:
                 file.write(response.text.strip())
             self._logger.info(f'saved {filename}')
-        
+
         # TODO this should be saved in a config file
         save('service_uuids.yaml', 'https://bitbucket.org/bluetooth-SIG/public/raw/025ac280519f8ad3967f79ee45bd921a76003113/assigned_numbers/uuids/service_uuids.yaml')
         save('company_identifiers.yaml', 'https://bitbucket.org/bluetooth-SIG/public/raw/025ac280519f8ad3967f79ee45bd921a76003113/assigned_numbers/company_identifiers/company_identifiers.yaml')
@@ -109,8 +117,9 @@ class BleScannerInteractive:
 
             # Iterate through services and characteristics
             for service in client.services:
-                self._console.log(f"Service: {service.uuid} {service.description} {service.handle} {self.__get_service_name(service.handle)}")
-                
+                self._console.log(
+                    f"Service: {service.uuid} {service.description} {service.handle} {self.__get_service_name(service.handle)}")
+
                 for characteristic in service.characteristics:
                     self._console.log(
                         f"  Characteristic: {characteristic.uuid}")
@@ -127,7 +136,7 @@ class BleScannerInteractive:
         finally:
             await client.disconnect()
 
-    def uuid_to_gatt_handle(self, uuid:str):
+    def uuid_to_gatt_handle(self, uuid: str):
         # Extract the 4-digit hex value from the UUID
         handle_hex = uuid[4:8]
         # Convert it to an integer
@@ -193,7 +202,6 @@ class BleScannerInteractive:
         #                 f"  Integer Data: {bytes_to_int(data)}")
         #             print(
         #                 f"  String Data: {bytes_to_string(data)}")
-                
 
         # if advertisement_data.service_data:
         #     print("Service Data:")
@@ -296,7 +304,7 @@ class BleScannerInteractive:
             device_data[0] = str(index)
             for i in range(0, len(device_data)):
                 text = device_data[i]
-                
+
                 # redact addresses
                 if self._redacted_address == True and i == 1:
                     text = text[:3] + '.' * (len(text) - 3)
@@ -304,7 +312,7 @@ class BleScannerInteractive:
 
             # tx power or services want to be found. highlight them
             style = ''
-            if abs(int(device_data[4])) > 0 or abs(int(device_data[5])) > 0:
+            if abs(int(device_data[self.get_key_index('tx_power', self._devices_columns)])) > 0 or abs(int(device_data[self.get_key_index('services', self._devices_columns)])) > 0:
                 style = 'green'
 
             self._table.add_row(*rendered_device_data, style=style)
@@ -319,7 +327,7 @@ class BleScannerInteractive:
                     live.update(self._table)
         except KeyboardInterrupt as kie:
             self._console.print("Bye bye")
-       
+
         exit(0)
 
         # while True:
