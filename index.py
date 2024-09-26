@@ -48,6 +48,7 @@ from rich.live import Live
 from rich.table import Table
 from rich.console import Console
 from ruamel.yaml import YAML
+from ruamel.yaml.reader import Reader
 from bleak import BleakScanner, AdvertisementData, BLEDevice, BleakClient
 from core import device_distance_calculation, bytes_to_hex_string, bytes_to_int, bytes_to_string
 logging.basicConfig(
@@ -160,6 +161,7 @@ class BleScannerInteractive:
                         company_id) or str(company_id)
                     break
 
+        # ensure that rssi and tx power are negative (since that is how it should work!)
         rssi = -abs(advertisement_data.rssi or device.rssi or 0)
         tx_power = -abs(advertisement_data.tx_power or 0)
         distance = device_distance_calculation(
@@ -168,7 +170,8 @@ class BleScannerInteractive:
 
         first_seen = last_seen
         if self._devices_dict.get(device.address, None) is not None:
-            first_seen = self._devices_dict[device.address][9]
+            first_seen = self._devices_dict[device.address][self.get_key_index(
+                'first_seen', self._devices_columns)]
 
         self._devices_dict[device.address] = [
             str(0),
@@ -222,11 +225,9 @@ class BleScannerInteractive:
 
     @staticmethod
     def strip_invalid(s):
-        from ruamel.yaml.reader import Reader
         res = ''
         for x in s:
             if Reader.NON_PRINTABLE.match(x):
-                # res += '\\x{:x}'.format(ord(x))
                 continue
             res += x
         return res
@@ -289,7 +290,7 @@ class BleScannerInteractive:
         # Remove devices after expire
         for device in keys_to_remove:
             del self._devices_dict[device]
-            self._logger.info('removed %s',device)
+            self._logger.info('removed %s', device)
 
         self._logger.info('bluetooth discovered devices started')
         devices_data = await BleakScanner.discover(timeout=self._discovery_timeout, return_adv=True)
@@ -318,13 +319,16 @@ class BleScannerInteractive:
 
     async def run(self):
         """Primary run loop"""
+        with Live(self._table, console=self._console) as live:
+            while True:
+                self.__create_table()
+                await self.__discover_with_data()
+                self.__write_current_device_list_csv()
+                live.update(self._table)
+
+    def entry(self):
         try:
-            with Live(self._table, console=self._console) as live:
-                while True:
-                    self.__create_table()
-                    await self.__discover_with_data()
-                    self.__write_current_device_list_csv()
-                    live.update(self._table)
+            asyncio.run(self.run())
         except KeyboardInterrupt:
             self._console.print("Bye bye")
         sys.exit(0)
@@ -337,4 +341,4 @@ class BleScannerInteractive:
 
 if __name__ == '__main__':
     scanner = BleScannerInteractive(redacted_address=True)
-    asyncio.run(scanner.run())
+    scanner.entry()
