@@ -36,26 +36,29 @@
 # └───────┴───────────────────┴──────────────────────────────┴──────┴──────────┴──────────┴──────────────────────────────┴──────────┴─────────────────────┘
 
 
-import asyncio
-from bleak import BleakScanner, AdvertisementData, BLEDevice, BleakClient, cli
-from rich.console import Console
-from rich.table import Table
-from rich.live import Live
-from rich.text import Text
-from rich.progress import track
-from core import device_distance_calculation, bytes_to_hex_string, bytes_to_int, bytes_to_string
-from datetime import datetime
-import logging
 import os
+import sys
+import logging
+from datetime import datetime, timedelta
+import asyncio
+import csv
+from rich.progress import track
+from rich.text import Text
+from rich.live import Live
+from rich.table import Table
+from rich.console import Console
+from ruamel.yaml import YAML
+from bleak import BleakScanner, AdvertisementData, BLEDevice, BleakClient
+from core import device_distance_calculation, bytes_to_hex_string, bytes_to_int, bytes_to_string
+logging.basicConfig(
+    filename='bluetooth-discovery.log', level=logging.DEBUG)
 
 
 class BleScannerInteractive:
 
     def __init__(self, redacted_address=False) -> None:
-        self._redacted_address = redacted_address
-        logging.basicConfig(
-            filename='bluetooth-discovery.log', level=logging.DEBUG)
         self._logger = logging.getLogger(__name__)
+        self._redacted_address = redacted_address
         self.ensure_bluetooth_public_information_is_saved()
         self._console = Console()
         self._company_dict = {}
@@ -70,7 +73,8 @@ class BleScannerInteractive:
             'services': 'Services',
             'company': 'Company',
             'distance': 'Distance',
-            'last_seen': 'Last Seen'
+            'last_seen': 'Last Seen',
+            'first_seen': 'First Seen'
         }
         self.__create_table()
         self._discovery_timeout = 10
@@ -162,10 +166,11 @@ class BleScannerInteractive:
             tx_power, rssi, self._signal_propagation_constant)
         last_seen = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # TODO first seen
-        self._devices_dict[device.address] = [
+        first_seen = last_seen
+        if self._devices_dict.get(device.address, None) is not None:
+            first_seen = self._devices_dict[device.address][9]
 
-            # index calculated later
+        self._devices_dict[device.address] = [
             str(0),
             str(device.address),
             str(device.name or "Unknown"),
@@ -174,7 +179,8 @@ class BleScannerInteractive:
             str(service_count),
             str(company or ""),
             str(f"{distance:.2f}"),
-            last_seen]
+            last_seen,
+            first_seen]
 
         # all items in array become parameters
         # self._table.add_row(*self._devices_dict[device.address])
@@ -226,8 +232,6 @@ class BleScannerInteractive:
         return res
 
     def __get_service_name(self, value: int):
-        from ruamel.yaml import YAML
-
         if len(self._services_dict) == 0:
             # https://stackoverflow.com/a/45871921
             with open('service_uuids.yaml', 'r', encoding='utf-8') as file:
@@ -241,8 +245,6 @@ class BleScannerInteractive:
         return None
 
     def __get_company_name(self, value: int):
-        from ruamel.yaml import YAML
-
         if len(self._company_dict) == 0:
             # https://stackoverflow.com/a/45871921
             with open('company_identifiers.yaml', 'r', encoding='utf-8') as file:
@@ -256,28 +258,26 @@ class BleScannerInteractive:
         return None
 
     def __write_current_device_list_csv(self):
-        import csv
         try:
-            with open('devices.csv', mode='w', newline='') as file:
+            with open('devices.csv', mode='w', newline='', encoding='utf8') as file:
                 writer = csv.writer(file)
 
                 # Write the header
                 writer.writerow(self._devices_columns.keys())
 
                 # Write the data
-                for device, values in self._devices_dict.items():
+                for _, values in self._devices_dict.items():
                     writer.writerow([*values])
         except Exception as e:
             self._logger.warning(e)
 
     async def loading(self):
-        for i in track(range(self._discovery_timeout + 1), description="Scanning..."):
+        for _ in track(range(self._discovery_timeout + 1), description="Scanning..."):
             await asyncio.sleep(1)
 
     async def __discover_with_data(self):
 
         # Combat "private resolvable random addresses" from filling up the screen.
-        from datetime import datetime, timedelta
         time_threshold = datetime.now(
         ) - timedelta(seconds=self._private_resolvable_random_address_timeout)
         keys_to_remove = []
@@ -289,7 +289,7 @@ class BleScannerInteractive:
         # Remove devices after expire
         for device in keys_to_remove:
             del self._devices_dict[device]
-            self._logger.info(f'removed {device}')
+            self._logger.info('removed %s',device)
 
         self._logger.info('bluetooth discovered devices started')
         devices_data = await BleakScanner.discover(timeout=self._discovery_timeout, return_adv=True)
@@ -302,11 +302,11 @@ class BleScannerInteractive:
         for index, (device_key, device_data) in enumerate(self._devices_dict.items()):
             rendered_device_data = []
             device_data[0] = str(index)
-            for i in range(0, len(device_data)):
-                text = device_data[i]
+            for index_device_data, text_device_data in enumerate(device_data):
+                text = text_device_data
 
                 # redact addresses
-                if self._redacted_address == True and i == 1:
+                if self._redacted_address is True and index_device_data == self.get_key_index('address', self._devices_columns):
                     text = text[:3] + '.' * (len(text) - 3)
                 rendered_device_data.append(Text(text=text))
 
@@ -314,10 +314,10 @@ class BleScannerInteractive:
             style = ''
             if abs(int(device_data[self.get_key_index('tx_power', self._devices_columns)])) > 0 or abs(int(device_data[self.get_key_index('services', self._devices_columns)])) > 0:
                 style = 'green'
-
             self._table.add_row(*rendered_device_data, style=style)
 
     async def run(self):
+        """Primary run loop"""
         try:
             with Live(self._table, console=self._console) as live:
                 while True:
@@ -325,10 +325,9 @@ class BleScannerInteractive:
                     await self.__discover_with_data()
                     self.__write_current_device_list_csv()
                     live.update(self._table)
-        except KeyboardInterrupt as kie:
+        except KeyboardInterrupt:
             self._console.print("Bye bye")
-
-        exit(0)
+        sys.exit(0)
 
         # while True:
         #     device_index = int(self._console.input(

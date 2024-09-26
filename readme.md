@@ -23,6 +23,10 @@
 
 `python index.py`
 
+## Development
+
+`python -m  pylint $(git ls-files '*.py')`
+
 ### 🛠️ Build Portable 
 
 `pyinstaller index.py -F -n bluetooth-wos`
