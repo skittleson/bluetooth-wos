@@ -42,6 +42,7 @@ import logging
 from datetime import datetime, timedelta
 import asyncio
 import csv
+import requests
 from rich.progress import track
 from rich.text import Text
 from rich.live import Live
@@ -84,25 +85,28 @@ class BleScannerInteractive:
         self._signal_propagation_constant = 8
         pass
 
-    def get_key_index(self, key: str, dict: dict):
-        keys = list(dict.keys())
+    def get_key_index(self, key: str, generic_dict: dict) -> int:
+        """Get a key by index"""
+
+        keys = list(generic_dict.keys())
         try:
             return keys.index(key)
         except ValueError:
             return -1  # Return -1 if key is not found
 
     def ensure_bluetooth_public_information_is_saved(self):
+        """Download public bluetooth information"""
+      
         def save(filename: str, url: str):
-            if os.path.isfile(filename) == True:
+            if os.path.isfile(filename) is True:
                 return
 
-            import requests
-            self._logger.info(f'updating/creating {filename} from {url}')
-            response = requests.get(url)
+            self._logger.info('updating/creation %s from %s', filename,url)
+            response = requests.get(url, timeout=5000)
             response.raise_for_status()
             with open(filename, 'w', encoding='utf-8') as file:
                 file.write(response.text.strip())
-            self._logger.info(f'saved {filename}')
+            self._logger.info('saved %s', filename)
 
         # TODO this should be saved in a config file
         save('service_uuids.yaml', 'https://bitbucket.org/bluetooth-SIG/public/raw/025ac280519f8ad3967f79ee45bd921a76003113/assigned_numbers/uuids/service_uuids.yaml')
@@ -110,8 +114,8 @@ class BleScannerInteractive:
 
     def __create_table(self) -> None:
         self._table = Table()
-        for device_key in self._devices_columns:
-            self._table.add_column(self._devices_columns[device_key])
+        for _, device_value in self._devices_columns.items():
+            self._table.add_column(device_value)
 
     async def _query_device(self, device_index: int):
         mac_address = self._devices_dict[device_index]
@@ -135,10 +139,10 @@ class BleScannerInteractive:
                         # descriptor_value = await client.read_gatt_char(descriptor.uuid)
                         self._console.log(
                             f"    Descriptor: {descriptor.uuid} Handle: {descriptor.handle}")
-
-        except Exception as e:
-            self._console.log(e)
-            self._logger.warning(e)
+        # pylint: disable=W0703
+        except Exception as exception:
+            self._console.log(exception)
+            self._logger.warning(exception)
         finally:
             await client.disconnect()
 
