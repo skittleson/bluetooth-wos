@@ -56,6 +56,7 @@ logging.basicConfig(
 
 
 class BleScannerInteractive:
+    """Interactive Bluettooth Scanner"""
 
     def __init__(self, redacted_address=False) -> None:
         self._logger = logging.getLogger(__name__)
