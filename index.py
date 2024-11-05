@@ -146,10 +146,10 @@ class BleScannerInteractive:
         finally:
             await client.disconnect()
 
-    def uuid_to_gatt_handle(self, uuid: str):
-        # Extract the 4-digit hex value from the UUID
+    def uuid_to_gatt_handle(self, uuid: str) -> int:
+        """Get uuid to int"""
+
         handle_hex = uuid[4:8]
-        # Convert it to an integer
         handle_int = int(handle_hex, 16)
         return handle_int
 
@@ -330,6 +330,7 @@ class BleScannerInteractive:
                 await self.__discover_with_data()
                 self.__write_current_device_list_csv()
                 live.update(self._table)
+
 
     def entry(self):
         try:
