@@ -288,7 +288,7 @@ class BleScannerInteractive:
         ) - timedelta(seconds=self._private_resolvable_random_address_timeout)
         keys_to_remove = []
         for device, value in self._devices_dict.items():
-            last_seen = datetime.strptime(value[8], '%Y-%m-%d %H:%M:%S')
+            last_seen = datetime.strptime(self.get_key_index('last_seen', self._devices_columns), '%Y-%m-%d %H:%M:%S')
             if last_seen < time_threshold:
                 keys_to_remove.append(device)
 
@@ -322,8 +322,9 @@ class BleScannerInteractive:
                 style = 'green'
             self._table.add_row(*rendered_device_data, style=style)
 
-    async def run(self):
-        """Primary run loop"""
+    async def run_async(self):
+        """async method to start app"""
+
         with Live(self._table, console=self._console) as live:
             while True:
                 self.__create_table()
@@ -332,9 +333,11 @@ class BleScannerInteractive:
                 live.update(self._table)
 
 
-    def entry(self):
+    def run(self):
+        """sync method to start app"""
+
         try:
-            asyncio.run(self.run())
+            asyncio.run(self.run_async())
         except KeyboardInterrupt:
             self._console.print("Bye bye")
         sys.exit(0)
@@ -347,4 +350,4 @@ class BleScannerInteractive:
 
 if __name__ == '__main__':
     scanner = BleScannerInteractive(redacted_address=True)
-    scanner.entry()
+    scanner.run()
