@@ -154,10 +154,8 @@ class BleScannerInteractive:
         return handle_int
 
     def __callback(self, device: BLEDevice, advertisement_data: AdvertisementData):
-        service_count = 0
-        if advertisement_data.service_data:
-            service_count = len(advertisement_data.service_data.items())
-
+        service_count = len(advertisement_data.service_data.items()) if advertisement_data.service_data else 0
+        
         company = None
         if advertisement_data.manufacturer_data:
             for company_id, data in advertisement_data.manufacturer_data.items():
@@ -230,6 +228,8 @@ class BleScannerInteractive:
 
     @staticmethod
     def strip_invalid(s):
+        """strip invalid yaml markup"""
+
         res = ''
         for x in s:
             if Reader.NON_PRINTABLE.match(x):
@@ -250,7 +250,7 @@ class BleScannerInteractive:
                 return service['name']
         return None
 
-    def __get_company_name(self, value: int):
+    def __get_company_name(self, value: int) -> str | None:
         if len(self._company_dict) == 0:
             # https://stackoverflow.com/a/45871921
             with open('company_identifiers.yaml', 'r', encoding='utf-8') as file:
