@@ -40,12 +40,12 @@
  - Resolve services by name
  - Estimates distance from transmitter and receiver of a device given ONLY RSSI if know distance values are present.
  - Configurable columns
- - Load spinner on first load. It's boring to see nothing in a table
  - Fingerprint devices that keep changing MAC addresses
  - Show adv data
  - Go into service data
  - Resolve common service->characteristics such as temp/humidity
  - attempt to keep same indexes of current devices
+ - [x] Load spinner on first load. It's boring to see nothing in a table
 
 ## 🤝 Contributing
 

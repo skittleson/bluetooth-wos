@@ -51,9 +51,14 @@ from rich.console import Console
 from ruamel.yaml import YAML
 from ruamel.yaml.reader import Reader
 from bleak import BleakScanner, AdvertisementData, BLEDevice, BleakClient
-from core import device_distance_calculation, bytes_to_hex_string, bytes_to_int, bytes_to_string
-logging.basicConfig(
-    filename='bluetooth-discovery.log', level=logging.DEBUG)
+from core import (
+    device_distance_calculation,
+    bytes_to_hex_string,
+    bytes_to_int,
+    bytes_to_string,
+)
+
+logging.basicConfig(filename="bluetooth-discovery.log", level=logging.DEBUG)
 
 
 class BleScannerInteractive:
@@ -68,22 +73,21 @@ class BleScannerInteractive:
         self._services_dict = {}
         self._devices_dict = {}
         self._devices_columns = {
-            'index': 'Index',
-            'address': 'Address',
-            'name': 'Name',
-            'rssi': 'RSSI',
-            'tx_power': 'TX Power',
-            'services': 'Services',
-            'company': 'Company',
-            'distance': 'Distance',
-            'last_seen': 'Last Seen',
-            'first_seen': 'First Seen'
+            "index": "Index",
+            "address": "Address",
+            "name": "Name",
+            "rssi": "RSSI",
+            "tx_power": "TX Power",
+            "services": "Services",
+            "company": "Company",
+            "distance": "Distance",
+            "last_seen": "Last Seen",
+            "first_seen": "First Seen",
         }
         self.__create_table()
         self._discovery_timeout = 10
         self._private_resolvable_random_address_timeout = 120
         self._signal_propagation_constant = 8
-        pass
 
     def get_key_index(self, key: str, generic_dict: dict) -> int:
         """Get a key by index"""
@@ -96,21 +100,27 @@ class BleScannerInteractive:
 
     def ensure_bluetooth_public_information_is_saved(self):
         """Download public bluetooth information"""
-      
+
         def save(filename: str, url: str):
             if os.path.isfile(filename) is True:
                 return
 
-            self._logger.info('updating/creation %s from %s', filename,url)
+            self._logger.info("updating/creation %s from %s", filename, url)
             response = requests.get(url, timeout=5000)
             response.raise_for_status()
-            with open(filename, 'w', encoding='utf-8') as file:
+            with open(filename, "w", encoding="utf-8") as file:
                 file.write(response.text.strip())
-            self._logger.info('saved %s', filename)
+            self._logger.info("saved %s", filename)
 
         # TODO this should be saved in a config file
-        save('service_uuids.yaml', 'https://bitbucket.org/bluetooth-SIG/public/raw/025ac280519f8ad3967f79ee45bd921a76003113/assigned_numbers/uuids/service_uuids.yaml')
-        save('company_identifiers.yaml', 'https://bitbucket.org/bluetooth-SIG/public/raw/025ac280519f8ad3967f79ee45bd921a76003113/assigned_numbers/company_identifiers/company_identifiers.yaml')
+        save(
+            "service_uuids.yaml",
+            "https://bitbucket.org/bluetooth-SIG/public/raw/025ac280519f8ad3967f79ee45bd921a76003113/assigned_numbers/uuids/service_uuids.yaml",
+        )
+        save(
+            "company_identifiers.yaml",
+            "https://bitbucket.org/bluetooth-SIG/public/raw/025ac280519f8ad3967f79ee45bd921a76003113/assigned_numbers/company_identifiers/company_identifiers.yaml",
+        )
 
     def __create_table(self) -> None:
         self._table = Table()
@@ -128,17 +138,17 @@ class BleScannerInteractive:
             # Iterate through services and characteristics
             for service in client.services:
                 self._console.log(
-                    f"Service: {service.uuid} {service.description} {service.handle} {self.__get_service_name(service.handle)}")
+                    f"Service: {service.uuid} {service.description} {service.handle} {self.__get_service_name(service.handle)}"
+                )
 
                 for characteristic in service.characteristics:
-                    self._console.log(
-                        f"  Characteristic: {characteristic.uuid}")
-                    self._console.log(
-                        f"    Properties: {characteristic.properties}")
+                    self._console.log(f"  Characteristic: {characteristic.uuid}")
+                    self._console.log(f"    Properties: {characteristic.properties}")
                     for descriptor in characteristic.descriptors:
                         # descriptor_value = await client.read_gatt_char(descriptor.uuid)
                         self._console.log(
-                            f"    Descriptor: {descriptor.uuid} Handle: {descriptor.handle}")
+                            f"    Descriptor: {descriptor.uuid} Handle: {descriptor.handle}"
+                        )
         # pylint: disable=W0703
         except Exception as exception:
             self._console.log(exception)
@@ -154,28 +164,35 @@ class BleScannerInteractive:
         return handle_int
 
     def __callback(self, device: BLEDevice, advertisement_data: AdvertisementData):
-        service_count = len(advertisement_data.service_data.items()) if advertisement_data.service_data else 0
-        
+        service_count = (
+            len(advertisement_data.service_data.items())
+            if advertisement_data.service_data
+            else 0
+        )
+
         company = None
         if advertisement_data.manufacturer_data:
-            for company_id, data in advertisement_data.manufacturer_data.items():
+            for company_id, _ in advertisement_data.manufacturer_data.items():
                 if company_id and company_id != 0:
-                    company = self.__get_company_name(
-                        company_id) or str(company_id)
+                    company = self.__get_company_name(company_id) or str(company_id)
                     break
 
         # ensure that rssi and tx power are negative (since that is how it should work!)
         rssi = -abs(advertisement_data.rssi or device.rssi or 0)
         tx_power = -abs(advertisement_data.tx_power or 0)
         distance = device_distance_calculation(
-            tx_power, rssi, self._signal_propagation_constant)
-        last_seen = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            tx_power, rssi, self._signal_propagation_constant
+        )
+        last_seen = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+        # If device has already been seen, use the original first seen value from existing table.
         first_seen = last_seen
         if self._devices_dict.get(device.address, None) is not None:
-            first_seen = self._devices_dict[device.address][self.get_key_index(
-                'first_seen', self._devices_columns)]
+            first_seen = self._devices_dict[device.address][
+                self.get_key_index("first_seen", self._devices_columns)
+            ]
 
+        # Maintain an ongoing current status list
         self._devices_dict[device.address] = [
             str(0),
             str(device.address),
@@ -186,7 +203,8 @@ class BleScannerInteractive:
             str(company or ""),
             str(f"{distance:.2f}"),
             last_seen,
-            first_seen]
+            first_seen,
+        ]
 
         # all items in array become parameters
         # self._table.add_row(*self._devices_dict[device.address])
@@ -230,7 +248,7 @@ class BleScannerInteractive:
     def strip_invalid(s):
         """strip invalid yaml markup"""
 
-        res = ''
+        res = ""
         for x in s:
             if Reader.NON_PRINTABLE.match(x):
                 continue
@@ -240,38 +258,36 @@ class BleScannerInteractive:
     def __get_service_name(self, value: int):
         if len(self._services_dict) == 0:
             # https://stackoverflow.com/a/45871921
-            with open('service_uuids.yaml', 'r', encoding='utf-8') as file:
-                yaml = YAML(typ='safe')
+            with open("service_uuids.yaml", "r", encoding="utf-8") as file:
+                yaml = YAML(typ="safe")
                 self._services_dict = yaml.load(
-                    BleScannerInteractive.strip_invalid(file.read()))
+                    BleScannerInteractive.strip_invalid(file.read())
+                )
 
-        for service in self._services_dict['uuids']:
-            if service['uuid'] == value:
-                return service['name']
+        for service in self._services_dict["uuids"]:
+            if service["uuid"] == value:
+                return service["name"]
         return None
 
     def __get_company_name(self, value: int) -> str | None:
         if len(self._company_dict) == 0:
             # https://stackoverflow.com/a/45871921
-            with open('company_identifiers.yaml', 'r', encoding='utf-8') as file:
-                yaml = YAML(typ='safe')
+            with open("company_identifiers.yaml", "r", encoding="utf-8") as file:
+                yaml = YAML(typ="safe")
                 self._company_dict = yaml.load(
-                    BleScannerInteractive.strip_invalid(file.read()))
+                    BleScannerInteractive.strip_invalid(file.read())
+                )
 
-        for company in self._company_dict['company_identifiers']:
-            if company['value'] == value:
-                return company['name']
+        for company in self._company_dict["company_identifiers"]:
+            if company["value"] == value:
+                return company["name"]
         return None
 
     def __write_current_device_list_csv(self):
         try:
-            with open('devices.csv', mode='w', newline='', encoding='utf8') as file:
+            with open("devices.csv", mode="w", newline="", encoding="utf8") as file:
                 writer = csv.writer(file)
-
-                # Write the header
                 writer.writerow(self._devices_columns.keys())
-
-                # Write the data
                 for _, values in self._devices_dict.items():
                     writer.writerow([*values])
         except Exception as e:
@@ -284,22 +300,28 @@ class BleScannerInteractive:
     async def __discover_with_data(self):
 
         # Combat "private resolvable random addresses" from filling up the screen.
-        time_threshold = datetime.now(
-        ) - timedelta(seconds=self._private_resolvable_random_address_timeout)
+        time_threshold = datetime.now() - timedelta(
+            seconds=self._private_resolvable_random_address_timeout
+        )
         keys_to_remove = []
         for device, value in self._devices_dict.items():
-            last_seen = datetime.strptime(value[self.get_key_index('last_seen', self._devices_columns)], '%Y-%m-%d %H:%M:%S')
+            last_seen = datetime.strptime(
+                value[self.get_key_index("last_seen", self._devices_columns)],
+                "%Y-%m-%d %H:%M:%S",
+            )
             if last_seen < time_threshold:
                 keys_to_remove.append(device)
 
         # Remove devices after expire
         for device in keys_to_remove:
             del self._devices_dict[device]
-            self._logger.info('removed %s', device)
+            self._logger.info("removed %s", device)
 
-        self._logger.info('bluetooth discovered devices started')
-        devices_data = await BleakScanner.discover(timeout=self._discovery_timeout, return_adv=True)
-        self._logger.info('bluetooth discovered devices ended')
+        self._logger.info("bluetooth discovered devices started")
+        devices_data = await BleakScanner.discover(
+            timeout=self._discovery_timeout, return_adv=True
+        )
+        self._logger.info("bluetooth discovered devices ended")
         for device_key in devices_data:
             device, adv = devices_data[device_key]
             self.__callback(device, adv)
@@ -312,26 +334,52 @@ class BleScannerInteractive:
                 text = text_device_data
 
                 # redact addresses
-                if self._redacted_address is True and index_device_data == self.get_key_index('address', self._devices_columns):
-                    text = text[:3] + '.' * (len(text) - 3)
+                if (
+                    self._redacted_address is True
+                    and index_device_data
+                    == self.get_key_index("address", self._devices_columns)
+                ):
+                    text = text[:3] + "." * (len(text) - 3)
                 rendered_device_data.append(Text(text=text))
 
             # tx power or services want to be found. highlight them
-            style = ''
-            if abs(int(device_data[self.get_key_index('tx_power', self._devices_columns)])) > 0 or abs(int(device_data[self.get_key_index('services', self._devices_columns)])) > 0:
-                style = 'green'
+            style = ""
+            if (
+                abs(
+                    int(
+                        device_data[
+                            self.get_key_index("tx_power", self._devices_columns)
+                        ]
+                    )
+                )
+                > 0
+                or abs(
+                    int(
+                        device_data[
+                            self.get_key_index("services", self._devices_columns)
+                        ]
+                    )
+                )
+                > 0
+            ):
+                style = "green"
             self._table.add_row(*rendered_device_data, style=style)
 
     async def run_async(self):
         """async method to start app"""
 
+        # Dummy loading screening while devices are being discovered
+        await asyncio.gather(self.__discover_with_data(), self.loading())
+        self._console.clear()
+        
+        # Keep a live table going 
         with Live(self._table, console=self._console) as live:
+            live.update(self._table)
             while True:
                 self.__create_table()
                 await self.__discover_with_data()
-                self.__write_current_device_list_csv()
                 live.update(self._table)
-
+                self.__write_current_device_list_csv()
 
     def run(self):
         """sync method to start app"""
@@ -348,6 +396,6 @@ class BleScannerInteractive:
         #     await self._query_device(device_index)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     scanner = BleScannerInteractive(redacted_address=True)
     scanner.run()
