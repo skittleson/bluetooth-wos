@@ -288,7 +288,7 @@ class BleScannerInteractive:
         ) - timedelta(seconds=self._private_resolvable_random_address_timeout)
         keys_to_remove = []
         for device, value in self._devices_dict.items():
-            last_seen = datetime.strptime(self.get_key_index('last_seen', self._devices_columns), '%Y-%m-%d %H:%M:%S')
+            last_seen = datetime.strptime(value[self.get_key_index('last_seen', self._devices_columns)], '%Y-%m-%d %H:%M:%S')
             if last_seen < time_threshold:
                 keys_to_remove.append(device)
 

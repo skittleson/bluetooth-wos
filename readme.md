@@ -19,9 +19,13 @@
 
 ## 🚀 Quick Start
 
-`pip install -r requirements.txt`
+`pip install uv`
 
-`python index.py`
+`uv venv`
+
+`uv pip sync requirements.txt`
+
+`uv run index.py`
 
 ## Development
 
