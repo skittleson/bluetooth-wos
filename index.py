@@ -1,40 +1,4 @@
-# NOTE: Some sensitive information has been removed such as MAC Addresses and names
-# ┏━━━━━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓
-# ┃ Index ┃ Address           ┃ Name                         ┃ RSSI ┃ TX power ┃ Services ┃ Company                      ┃ Distance ┃ Last Seen           ┃
-# ┡━━━━━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━┩
-# │     0 │ 00:00:00:00:00:00 │ Unknown                      │ -39  │ 0        │ 0        │ Microsoft                    │ 0.00     │ 2024-09-18 15:11:42 │
-# │     1 │ 00:00:00:00:00:00 │ [TV] Samsung Q90 Series (75) │ -82  │ 0        │ 0        │ Samsung Electronics Co. Ltd. │ 0.00     │ 2024-09-18 15:11:42 │
-# │     2 │ 00:00:00:00:00:00 │ Wyze Lock                    │ -85  │ 0        │ 0        │ 17497                        │ 0.00     │ 2024-09-18 15:11:42 │
-# │     3 │ 00:00:00:00:00:00 │ R33-0405                     │ -38  │ 0        │ 0        │ 46517                        │ 0.00     │ 2024-09-18 15:11:42 │
-# │     4 │ 00:00:00:00:00:00 │ Unknown                      │ -80  │ 0        │ 0        │ Samsung Electronics Co. Ltd. │ 0.00     │ 2024-09-18 15:11:42 │
-# │     5 │ 00:00:00:00:00:00 │ Unknown                      │ -81  │ -17      │ 0        │ Apple, Inc.                  │ 6.31     │ 2024-09-18 15:11:42 │
-# │     6 │ 00:00:00:00:00:00 │ Unknown                      │ -34  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:02 │
-# │     7 │ 00:00:00:00:00:00 │ N016Y                        │ -74  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:32 │
-# │     8 │ 00:00:00:00:00:00 │ Unknown                      │ -62  │ 0        │ 0        │ Apple, Inc.                  │ 0.00     │ 2024-09-18 15:11:02 │
-# │     9 │ 00:00:00:00:00:00 │ Unknown                      │ -37  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:42 │
-# │    10 │ 00:00:00:00:00:00 │ Unknown                      │ -83  │ -8       │ 0        │ Apple, Inc.                  │ 8.66     │ 2024-09-18 15:10:02 │
-# │    11 │ 00:00:00:00:00:00 │ Unknown                      │ -58  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:32 │
-# │    12 │ 00:00:00:00:00:00 │ Z01_665384                   │ -78  │ -65      │ 0        │ Swipp ApS                    │ 1.45     │ 2024-09-18 15:11:42 │
-# │    13 │ 00:00:00:00:00:00 │ LYWSD03MMC                   │ -82  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:42 │
-# │    14 │ 00:00:00:00:00:00 │ ATC_97A504                   │ -82  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:22 │
-# │    15 │ 00:00:00:00:00:00 │ ATC_C2F4FE                   │ -81  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:10:12 │
-# │    16 │ 00:00:00:00:00:00 │ LYWSD03MMC                   │ -80  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:42 │
-# │    17 │ 00:00:00:00:00:00 │ Unknown                      │ -83  │ 0        │ 0        │ Apple, Inc.                  │ 0.00     │ 2024-09-18 15:10:32 │
-# │    18 │ 00:00:00:00:00:00 │ Unknown                      │ -55  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:22 │
-# │    19 │ 00:00:00:00:00:00 │ Unknown                      │ -65  │ 0        │ 0        │ Samsung Electronics Co. Ltd. │ 0.00     │ 2024-09-18 15:11:22 │
-# │    20 │ 00:00:00:00:00:00 │ Unknown                      │ -39  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:02 │
-# │    21 │ 00:00:00:00:00:00 │ Unknown                      │ -70  │ -12      │ 0        │ Apple, Inc.                  │ 5.31     │ 2024-09-18 15:11:42 │
-# │    22 │ 00:00:00:00:00:00 │ ATC_E2930E                   │ -80  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:10:52 │
-# │    23 │ 00:00:00:00:00:00 │ Unknown                      │ -69  │ 0        │ 0        │ Apple, Inc.                  │ 0.00     │ 2024-09-18 15:10:22 │
-# │    24 │ 00:00:00:00:00:00 │ Unknown                      │ -38  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:02 │
-# │    25 │ 00:00:00:00:00:00 │ Unknown                      │ -44  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:22 │
-# │    26 │ 00:00:00:00:00:00 │ Unknown                      │ -54  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:42 │
-# │    27 │ 00:00:00:00:00:00 │ Unknown                      │ -66  │ 0        │ 0        │ Samsung Electronics Co. Ltd. │ 0.00     │ 2024-09-18 15:11:42 │
-# │    28 │ 00:00:00:00:00:00 │ Unknown                      │ -58  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:22 │
-# │    29 │ 00:00:00:00:00:00 │ Unknown                      │ -45  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:32 │
-# │    30 │ 00:00:00:00:00:00 │ Unknown                      │ -35  │ 0        │ 1        │                              │ 0.00     │ 2024-09-18 15:11:32 │
-# └───────┴───────────────────┴──────────────────────────────┴──────┴──────────┴──────────┴──────────────────────────────┴──────────┴─────────────────────┘
-
+"""Entry into bluetooth wos"""
 
 import os
 import sys
@@ -50,6 +14,8 @@ from rich.table import Table
 from rich.console import Console
 from ruamel.yaml import YAML
 from ruamel.yaml.reader import Reader
+import numpy as np
+from scipy import stats
 from bleak import BleakScanner, AdvertisementData, BLEDevice, BleakClient
 from core import (
     device_distance_calculation,
@@ -62,7 +28,7 @@ logging.basicConfig(filename="bluetooth-discovery.log", level=logging.DEBUG)
 
 
 class BleScannerInteractive:
-    """Interactive Bluettooth Scanner"""
+    """Interactive Bluetooth Scanner"""
 
     def __init__(self, redacted_address=False) -> None:
         self._logger = logging.getLogger(__name__)
@@ -138,12 +104,14 @@ class BleScannerInteractive:
             # Iterate through services and characteristics
             for service in client.services:
                 self._console.log(
-                    f"Service: {service.uuid} {service.description} {service.handle} {self.__get_service_name(service.handle)}"
+                    f"Service: {service.uuid} {service.description} {service.handle} {self.__get_entity_name(service.handle, 'service')}"
                 )
 
                 for characteristic in service.characteristics:
-                    self._console.log(f"  Characteristic: {characteristic.uuid}")
-                    self._console.log(f"    Properties: {characteristic.properties}")
+                    self._console.log(
+                        f"  Characteristic: {characteristic.uuid}")
+                    self._console.log(
+                        f"    Properties: {characteristic.properties}")
                     for descriptor in characteristic.descriptors:
                         # descriptor_value = await client.read_gatt_char(descriptor.uuid)
                         self._console.log(
@@ -174,7 +142,8 @@ class BleScannerInteractive:
         if advertisement_data.manufacturer_data:
             for company_id, _ in advertisement_data.manufacturer_data.items():
                 if company_id and company_id != 0:
-                    company = self.__get_company_name(company_id) or str(company_id)
+                    company = self.__get_entity_name(
+                        company_id, 'company') or str(company_id)
                     break
 
         # ensure that rssi and tx power are negative (since that is how it should work!)
@@ -255,32 +224,56 @@ class BleScannerInteractive:
             res += x
         return res
 
-    def __get_service_name(self, value: int):
-        if len(self._services_dict) == 0:
-            # https://stackoverflow.com/a/45871921
-            with open("service_uuids.yaml", "r", encoding="utf-8") as file:
+    def __get_entity_name(self, value: int, entity_type: str) -> str | None:
+        """
+        Get a name for a given value and entity type (service or company).
+
+        Args:
+            value: The integer value to look up
+            entity_type: Type of entity to search for ("service" or "company")
+
+        Returns:
+            The name of the entity if found, None otherwise
+        """
+
+        entity_attributes = {
+            "service": {
+                "dict_attr": "_services_dict",
+                "file_name": "service_uuids.yaml",
+                "root_key": "uuids",
+                "value_key": "uuid",
+            },
+            "company": {
+                "dict_attr": "_company_dict",
+                "file_name": "company_identifiers.yaml",
+                "root_key": "company_identifiers",
+                "value_key": "value",
+            }
+        }
+
+        # Check if the requested entity type is supported
+        if entity_type not in entity_attributes:
+            raise ValueError(f"Unknown entity type: {entity_type}")
+
+        attrs = entity_attributes[entity_type]
+        dict_attr = attrs["dict_attr"]
+
+        # Load data if the dictionary is empty
+        if len(getattr(self, dict_attr, {})) == 0:
+            with open(attrs["file_name"], "r", encoding="utf-8") as file:
                 yaml = YAML(typ="safe")
-                self._services_dict = yaml.load(
-                    BleScannerInteractive.strip_invalid(file.read())
+                setattr(
+                    self,
+                    dict_attr,
+                    yaml.load(BleScannerInteractive.strip_invalid(file.read()))
                 )
 
-        for service in self._services_dict["uuids"]:
-            if service["uuid"] == value:
-                return service["name"]
-        return None
+        # Search for the entity
+        entities_dict = getattr(self, dict_attr)
+        for entity in entities_dict[attrs["root_key"]]:
+            if entity[attrs["value_key"]] == value:
+                return entity["name"]
 
-    def __get_company_name(self, value: int) -> str | None:
-        if len(self._company_dict) == 0:
-            # https://stackoverflow.com/a/45871921
-            with open("company_identifiers.yaml", "r", encoding="utf-8") as file:
-                yaml = YAML(typ="safe")
-                self._company_dict = yaml.load(
-                    BleScannerInteractive.strip_invalid(file.read())
-                )
-
-        for company in self._company_dict["company_identifiers"]:
-            if company["value"] == value:
-                return company["name"]
         return None
 
     def __write_current_device_list_csv(self):
@@ -293,7 +286,7 @@ class BleScannerInteractive:
         except Exception as e:
             self._logger.warning(e)
 
-    async def loading(self):
+    async def __loading(self):
         for _ in track(range(self._discovery_timeout + 1), description="Scanning..."):
             await asyncio.sleep(1)
 
@@ -326,12 +319,14 @@ class BleScannerInteractive:
             device, adv = devices_data[device_key]
             self.__callback(device, adv)
 
+        self.calculate_missing_distances_regression()
+
         # update all the missing ones in the table
         for index, (device_key, device_data) in enumerate(self._devices_dict.items()):
             rendered_device_data = []
             device_data[0] = str(index)
             for index_device_data, text_device_data in enumerate(device_data):
-                text = text_device_data
+                text = str(text_device_data)
 
                 # redact addresses
                 if (
@@ -344,35 +339,112 @@ class BleScannerInteractive:
 
             # tx power or services want to be found. highlight them
             style = ""
-            if (
-                abs(
-                    int(
-                        device_data[
-                            self.get_key_index("tx_power", self._devices_columns)
-                        ]
-                    )
-                )
-                > 0
+            if (abs(int(device_data[self.get_key_index("tx_power", self._devices_columns)])) > 0
                 or abs(
                     int(
                         device_data[
-                            self.get_key_index("services", self._devices_columns)
+                            self.get_key_index(
+                                "services", self._devices_columns)
                         ]
                     )
-                )
+            )
                 > 0
             ):
                 style = "green"
             self._table.add_row(*rendered_device_data, style=style)
 
+    def calculate_missing_distances_regression(self):
+        
+        
+        # Step 1: Gather data points from devices with complete information
+        rssi_values = []
+        distance_values = []
+        
+        for device in self._devices_dict.values():
+             if abs(int(device[self.get_key_index("rssi", self._devices_columns)])) > 0 and \
+                    abs(int(device[self.get_key_index("tx_power", self._devices_columns)])) > 0 and \
+                    float(device[self.get_key_index("distance", self._devices_columns)]) > 0:
+                rssi_values.append(abs(int(device[self.get_key_index("rssi", self._devices_columns)])))
+                distance_values.append(float(device[self.get_key_index("distance", self._devices_columns)]))
+        
+        if len(rssi_values) < 3:  # Need sufficient data points
+            return
+        
+        # Step 2: Build a log-based model (since RSSI vs distance typically follows logarithmic relationship)
+        # Log-distance path loss model: distance = 10^((Tx_power - RSSI)/(10*n))
+        # where n is the path loss exponent
+        
+        # Since we don't have TX power, we'll use a simple regression on log of distance
+        log_distances = np.log10(distance_values)
+        slope, intercept, r_value, p_value, std_err = stats.linregress(rssi_values, log_distances)
+        
+        # Step 3: Apply the model to devices without distance
+        for device_id, device in self._devices_dict.items():
+            if abs(int(device[self.get_key_index("tx_power", self._devices_columns)])) == 0:
+                rssi = abs(int(device[self.get_key_index("rssi", self._devices_columns)]))
+                log_distance = slope * rssi + intercept
+                device[self.get_key_index("distance", self._devices_columns)] = "{:.2f}".format(10 ** log_distance)
+
+    def calculate_missing_distances(self):
+        """Calculates the missing distance value given information about other devices"""
+
+        # Step 1: Gather data points from devices with complete information
+        known_data = []
+        for device in self._devices_dict.values():
+            if abs(int(device[self.get_key_index("rssi", self._devices_columns)])) > 0 and \
+                    abs(int(device[self.get_key_index("tx_power", self._devices_columns)])) > 0 and \
+                    float(device[self.get_key_index("distance", self._devices_columns)]) > 0:
+                known_data.append({
+                    'rssi': abs(int(device[self.get_key_index("rssi", self._devices_columns)])),
+                    'distance': float(device[self.get_key_index("distance", self._devices_columns)])
+                })
+
+        if not known_data:
+            return  # Not enough information to make estimates
+
+        # Step 2: Create a simple model relating RSSI to distance - Simple averaging by RSSI value
+        rssi_to_distance = {}
+        rssi_counts = {}
+        for point in known_data:
+            rssi = point['rssi']
+            distance = point['distance']
+
+            if rssi not in rssi_to_distance:
+                rssi_to_distance[rssi] = 0
+                rssi_counts[rssi] = 0
+
+            rssi_to_distance[rssi] += distance
+            rssi_counts[rssi] += 1
+
+        # Calculate average distance for each RSSI value
+        for rssi in rssi_to_distance:
+            rssi_to_distance[rssi] /= rssi_counts[rssi]
+
+        # Step 3: Estimate distances for devices missing TX Power then update them
+        for device_id, device in self._devices_dict.items():
+            if abs(int(device[self.get_key_index("tx_power", self._devices_columns)])) == 0:
+                rssi = abs(
+                    int(device[self.get_key_index("rssi", self._devices_columns)]))
+
+                # Find the closest known RSSI if exact match not available
+                if rssi in rssi_to_distance:
+                    device[self.get_key_index("distance", self._devices_columns)] = "{:.2f}".format(
+                        rssi_to_distance[rssi])
+                else:
+                    # Find closest RSSI value
+                    closest_rssi = min(rssi_to_distance.keys(),
+                                       key=lambda x: abs(x - rssi))
+                    device[self.get_key_index("distance", self._devices_columns)] = "{:.2f}".format(
+                        rssi_to_distance[closest_rssi])
+
     async def run_async(self):
         """async method to start app"""
 
         # Dummy loading screening while devices are being discovered
-        await asyncio.gather(self.__discover_with_data(), self.loading())
+        await asyncio.gather(self.__discover_with_data(), self.__loading())
         self._console.clear()
-        
-        # Keep a live table going 
+
+        # Keep a live table going
         with Live(self._table, console=self._console) as live:
             live.update(self._table)
             while True:

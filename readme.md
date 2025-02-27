@@ -13,6 +13,7 @@
  - Writes a current device list to a csv file.
  - Identifies the company of a device using a public listing.
  - Calculates distance from transmitter and receiver of a device with TX Power and RSSI.
+ - Estimates distance based on devices that have tx power.
  - Removes devices that have not been present for certain amount of time. This combats the "private resolvable random addresses" feature that prevents tracking of devices.
  - Highlights devices that tend to "stick around"
  - Hide device addresses from screen
@@ -37,15 +38,16 @@
 
 ## 🛣️ Roadmap
  
- - Resolve services by name
- - Estimates distance from transmitter and receiver of a device given ONLY RSSI if know distance values are present.
- - Configurable columns
- - Fingerprint devices that keep changing MAC addresses
- - Show adv data
- - Go into service data
- - Resolve common service->characteristics such as temp/humidity
- - attempt to keep same indexes of current devices
+ - [ ] Resolve services by name
+ - [x] Estimates distance from transmitter and receiver of a device given ONLY RSSI if know distance values are present.
+ - [ ] Configurable columns
+ - [ ] Fingerprint devices that keep changing MAC addresses
+ - [ ] Show adv data
+ - [ ] Interactive way to go into service data
+ - [ ] Resolve common service->characteristics such as temp/humidity
+ - [ ] attempt to keep same indexes of current devices
  - [x] Load spinner on first load. It's boring to see nothing in a table
+ - [ ] no coloring option
 
 ## 🤝 Contributing
 
