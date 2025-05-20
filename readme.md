@@ -1,6 +1,11 @@
 <h1 align="center">Bluetooth "Wall of Sheep"</h1>
+![Python](https://img.shields.io/badge/python-3.8+-blue)
+![Issues](https://img.shields.io/github/issues/skittleson/bluetooth-wos)
+![License](https://img.shields.io/github/license/skittleson/bluetooth-wos)
 
-> A little app that discovers bluetooth devices near by and displays them on a board.
+
+> > Bluetooth "Wall of Sheep" is a lightweight Python application that scans for nearby Bluetooth devices and displays them in a live-updating, interactive board. It's ideal for demonstrating Bluetooth visibility and presence tracking in real-time.
+
 
 ## ✨ Demo
 
@@ -9,24 +14,37 @@
 
 ## ✅ Features
 
- - The "Wall of Sheep".  A list of all bluetooth devices and useful information.
- - Writes a current device list to a csv file.
- - Identifies the company of a device using a public listing.
- - Calculates distance from transmitter and receiver of a device with TX Power and RSSI.
- - Estimates distance based on devices that have tx power.
- - Removes devices that have not been present for certain amount of time. This combats the "private resolvable random addresses" feature that prevents tracking of devices.
- - Highlights devices that tend to "stick around"
- - Hide device addresses from screen
+### 🔍 Core Features
+- Live discovery of nearby Bluetooth devices
+- Interactive “Wall of Sheep” display with metadata
+- Company identification via public device listing
+- Real-time CSV export of scanned device data
+
+### 📏 Device Intelligence
+- Estimates distance using RSSI and TX Power
+- Highlights persistent devices ("stick around")
+- Removes transient devices to handle address randomization
+- Detects and hides device MAC addresses for privacy
+
+### 🔧 Configurable Behavior
+- Adjustable timeout for inactive devices
+- Toggle address visibility
+
 
 ## 🚀 Quick Start
 
-`pip install uv`
+### ⚙️ Requirements
+- Python 3.8+
+- Linux or macOS (Bluetooth support)
+- `pip`, `uv`, and `pyinstaller`
 
-`uv venv`
 
-`uv pip sync requirements.txt`
-
-`uv run index.py`
+```bash
+pip install uv
+uv venv
+uv pip sync requirements.txt
+uv run index.py
+```
 
 ## Development
 
