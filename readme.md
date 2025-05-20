@@ -1,7 +1,7 @@
 <h1 align="center">Bluetooth "Wall of Sheep"</h1>
+
 ![Python](https://img.shields.io/badge/python-3.8+-blue)
 ![Issues](https://img.shields.io/github/issues/skittleson/bluetooth-wos)
-![License](https://img.shields.io/github/license/skittleson/bluetooth-wos)
 
 
 > > Bluetooth "Wall of Sheep" is a lightweight Python application that scans for nearby Bluetooth devices and displays them in a live-updating, interactive board. It's ideal for demonstrating Bluetooth visibility and presence tracking in real-time.
