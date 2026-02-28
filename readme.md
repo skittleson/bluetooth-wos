@@ -63,9 +63,9 @@ uv run index.py
  - [ ] Show adv data
  - [ ] Interactive way to go into service data
  - [ ] Resolve common service->characteristics such as temp/humidity
- - [ ] attempt to keep same indexes of current devices
  - [x] Load spinner on first load. It's boring to see nothing in a table
- - [ ] no coloring option
+ - [x] no coloring option
+ - [x] current duration of seen (last seen - first seen)
 
 ## 🤝 Contributing
 
