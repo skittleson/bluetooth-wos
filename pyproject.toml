@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bluetooth-wos"
+version = "0.1.0"
+description = "Interactive Bluetooth WOS Scanner"
+requires-python = ">=3.10"
+dependencies = [
+    "async-timeout==5.0.1",
+    "bleak==0.22.3",
+    "certifi==2025.1.31",
+    "dbus-fast==2.32.0",
+    "idna==3.10",
+    "requests==2.32.3",
+    "rich==13.9.4",
+    "ruamel-yaml==0.18.10",
+    "typing-extensions==4.12.2",
+    "urllib3==2.3.0",
+    "numpy",
+    "scipy",
+]
+
+[project.scripts]
+bluetooth-wos = "bluetooth_wos:main"
+
+[tool.setuptools]
+py-modules = ["bluetooth_wos", "core"]

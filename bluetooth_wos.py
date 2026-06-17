@@ -27,6 +27,127 @@ from core import (
 logging.basicConfig(filename="bluetooth-discovery.log", level=logging.DEBUG)
 
 
+def _decode_temperature(data: bytes):
+    """GATT Temperature (0x1809): sint16 in units of 0.01 °C"""
+    try:
+        if len(data) < 2:
+            return None
+        value = int.from_bytes(data[:2], "little", signed=True) / 100
+        return f"{value:.1f} °C"
+    except Exception:
+        return None
+
+
+def _decode_humidity(data: bytes):
+    """GATT Humidity (0x181A): uint16 in units of 0.01 %"""
+    try:
+        if len(data) < 2:
+            return None
+        value = int.from_bytes(data[:2], "little", signed=False) / 100
+        return f"{value:.1f} %"
+    except Exception:
+        return None
+
+
+def _decode_battery(data: bytes):
+    """GATT Battery Level (0x180F): uint8 percentage 0-100"""
+    try:
+        if len(data) < 1:
+            return None
+        value = data[0]
+        return f"{value} %"
+    except Exception:
+        return None
+
+
+def _decode_tx_power(data: bytes):
+    """GATT Tx Power (0x1804): sint8 dBm"""
+    try:
+        if len(data) < 1:
+            return None
+        value = int.from_bytes(data[:1], "little", signed=True)
+        return f"{value} dBm"
+    except Exception:
+        return None
+
+
+def _decode_heart_rate(data: bytes):
+    """GATT Heart Rate Measurement (0x180D).
+
+    Layout: byte 0 = flags; bit 0 selects value width (0 = uint8, 1 = uint16).
+    Remaining flag-gated fields (energy, RR intervals) are ignored.
+    """
+    try:
+        if len(data) < 2:
+            return None
+        flags = data[0]
+        if flags & 0x01:
+            if len(data) < 3:
+                return None
+            value = int.from_bytes(data[1:3], "little", signed=False)
+        else:
+            value = data[1]
+        return f"{value} bpm"
+    except Exception:
+        return None
+
+
+def _decode_eddystone(data: bytes):
+    """Eddystone (0xFEAA) plaintext beacon frames.
+
+    Frame type is the first byte. Decodes TLM (telemetry: battery
+    voltage + temperature), UID (namespace/instance), and URL frames.
+    """
+    try:
+        if len(data) < 1:
+            return None
+        frame_type = data[0]
+
+        # TLM (telemetry) frame — 0x20
+        if frame_type == 0x20 and len(data) >= 14:
+            # data[1] = TLM version; data[2:4] = battery mV (uint16 BE)
+            battery_mv = int.from_bytes(data[2:4], "big", signed=False)
+            # data[4:6] = temperature, 8.8 fixed-point signed (BE)
+            temp_raw = int.from_bytes(data[4:6], "big", signed=True)
+            temp_c = temp_raw / 256
+            parts = []
+            if battery_mv:
+                parts.append(f"battery {battery_mv} mV")
+            if temp_raw != 0x8000:
+                parts.append(f"{temp_c:.1f} °C")
+            return f"TLM ({', '.join(parts)})" if parts else "TLM"
+
+        # UID frame — 0x00
+        if frame_type == 0x00 and len(data) >= 18:
+            namespace = data[2:12].hex()
+            instance = data[12:18].hex()
+            return f"UID ({namespace}/{instance})"
+
+        # URL frame — 0x10
+        if frame_type == 0x10 and len(data) >= 3:
+            schemes = ["http://www.", "https://www.", "http://", "https://"]
+            scheme = schemes[data[2]] if data[2] < len(schemes) else ""
+            tail = bytes(b for b in data[3:] if 0x20 <= b < 0x7F).decode(
+                "ascii", "ignore"
+            )
+            return f"URL ({scheme}{tail})"
+
+        return None
+    except Exception:
+        return None
+
+
+# Maps GATT service UUID (int) → (human label, decode function)
+KNOWN_CHARACTERISTICS = {
+    0x1809: ("Temperature", _decode_temperature),
+    0x181A: ("Humidity", _decode_humidity),
+    0x180F: ("Battery Level", _decode_battery),
+    0x1804: ("TX Power Level", _decode_tx_power),
+    0x180D: ("Heart Rate", _decode_heart_rate),
+    0xFEAA: ("Eddystone", _decode_eddystone),
+}
+
+
 class BleScannerInteractive:
     """Interactive Bluetooth Scanner"""
 
@@ -35,6 +156,7 @@ class BleScannerInteractive:
         self._redacted_address = redacted_address
         self.ensure_bluetooth_public_information_is_saved()
         self._console = Console()
+        self._table = Table()
         self._company_dict = {}
         self._services_dict = {}
         self._devices_dict = {}
@@ -50,6 +172,9 @@ class BleScannerInteractive:
             "last_seen": "Last Seen",
             "first_seen": "First Seen",
         }
+        # internal-only fields stored on each device row beyond the visible columns
+        self._estimated_index = len(self._devices_columns)
+        self._service_data_index = len(self._devices_columns) + 1
         self.__create_table()
         self._discovery_timeout = 10
         self._private_resolvable_random_address_timeout = 120
@@ -89,9 +214,9 @@ class BleScannerInteractive:
         )
 
     def __create_table(self) -> None:
-        self._table = Table()
-        for _, device_value in self._devices_columns.items():
-            self._table.add_column(device_value)
+        if not self._table.columns:
+            for _, device_value in self._devices_columns.items():
+                self._table.add_column(device_value)
 
     async def _query_device(self, device_index: int):
         mac_address = self._devices_dict[device_index]
@@ -130,6 +255,39 @@ class BleScannerInteractive:
         handle_hex = uuid[4:8]
         handle_int = int(handle_hex, 16)
         return handle_int
+
+    def _log_known_characteristics(self, live: Live) -> None:
+        """Log decoded values for well-known GATT services found in advertisement data.
+
+        Prints above the Live region so the messages scroll up while the table
+        stays pinned to the bottom (see Rich Live docs: console.print on the
+        Live's console renders above the live display).
+        """
+
+        for address, device in self._devices_dict.items():
+            if len(device) <= self._service_data_index:
+                continue
+            service_data: dict = device[self._service_data_index]
+            if not service_data:
+                continue
+            for uuid_str, raw_bytes in service_data.items():
+                try:
+                    short_uuid = int(uuid_str[4:8], 16)
+                except (ValueError, IndexError):
+                    continue
+                if short_uuid not in KNOWN_CHARACTERISTICS:
+                    continue
+                label, decode_fn = KNOWN_CHARACTERISTICS[short_uuid]
+                value = decode_fn(raw_bytes)
+                if value is not None:
+                    name = device[2]
+                    timestamp = datetime.now().strftime("%H:%M:%S")
+                    live.console.print(
+                        f"[dim]{timestamp}[/dim] [cyan]{address}[/cyan] "
+                        f"{name} [yellow]{label}[/yellow]: [green]{value}[/green]",
+                        emoji=False,
+                        markup=True,
+                    )
 
     def __callback(self, device: BLEDevice, advertisement_data: AdvertisementData):
         service_count = (
@@ -177,6 +335,14 @@ class BleScannerInteractive:
 
         # all items in array become parameters
         # self._table.add_row(*self._devices_dict[device.address])
+
+        # Mark distance as computed (not estimated)
+        self._devices_dict[device.address].append("0")
+
+        # Store raw service_data for characteristic decoding (keyed by full UUID string)
+        self._devices_dict[device.address].append(
+            dict(advertisement_data.service_data) if advertisement_data.service_data else {}
+        )
 
         # if advertisement_data.manufacturer_data:
         #     self._console.log("Manufacturer Data:")
@@ -280,9 +446,10 @@ class BleScannerInteractive:
         try:
             with open("devices.csv", mode="w", newline="", encoding="utf8") as file:
                 writer = csv.writer(file)
+                col_count = len(self._devices_columns)
                 writer.writerow(self._devices_columns.keys())
                 for _, values in self._devices_dict.items():
-                    writer.writerow([*values])
+                    writer.writerow(values[:col_count])
         except Exception as e:
             self._logger.warning(e)
 
@@ -325,7 +492,8 @@ class BleScannerInteractive:
         for index, (device_key, device_data) in enumerate(self._devices_dict.items()):
             rendered_device_data = []
             device_data[0] = str(index)
-            for index_device_data, text_device_data in enumerate(device_data):
+            col_count = len(self._devices_columns)
+            for index_device_data, text_device_data in enumerate(device_data[:col_count]):
                 text = str(text_device_data)
 
                 # redact addresses
@@ -335,6 +503,12 @@ class BleScannerInteractive:
                     == self.get_key_index("address", self._devices_columns)
                 ):
                     text = text[:3] + "." * (len(text) - 3)
+
+                # append asterisk to estimated distances
+                if (index_device_data == self.get_key_index("distance", self._devices_columns)
+                        and device_data[self._estimated_index] == "1"):
+                    text = text + " *"
+
                 rendered_device_data.append(Text(text=text))
 
             # tx power or services want to be found. highlight them
@@ -367,23 +541,39 @@ class BleScannerInteractive:
                 rssi_values.append(abs(int(device[self.get_key_index("rssi", self._devices_columns)])))
                 distance_values.append(float(device[self.get_key_index("distance", self._devices_columns)]))
         
-        if len(rssi_values) < 3:  # Need sufficient data points
+        if len(rssi_values) < 1:  # Need at least 1 data point for regression
             return
         
         # Step 2: Build a log-based model (since RSSI vs distance typically follows logarithmic relationship)
         # Log-distance path loss model: distance = 10^((Tx_power - RSSI)/(10*n))
         # where n is the path loss exponent
         
-        # Since we don't have TX power, we'll use a simple regression on log of distance
-        log_distances = np.log10(distance_values)
-        slope, intercept, r_value, p_value, std_err = stats.linregress(rssi_values, log_distances)
+        if len(rssi_values) == 1:
+            slope = None
+            intercept = None
+        else:
+            log_distances = np.log10(distance_values)
+            slope, intercept, r_value, p_value, std_err = stats.linregress(rssi_values, log_distances)
         
-        # Step 3: Apply the model to devices without distance
-        for device_id, device in self._devices_dict.items():
-            if abs(int(device[self.get_key_index("tx_power", self._devices_columns)])) == 0:
-                rssi = abs(int(device[self.get_key_index("rssi", self._devices_columns)]))
-                log_distance = slope * rssi + intercept
-                device[self.get_key_index("distance", self._devices_columns)] = "{:.2f}".format(10 ** log_distance)
+       # Step 3: Apply the model to devices without distance
+        if slope is not None:
+            for device_id, device in self._devices_dict.items():
+                if abs(int(device[self.get_key_index("tx_power", self._devices_columns)])) == 0:
+                    rssi = abs(int(device[self.get_key_index("rssi", self._devices_columns)]))
+                    log_distance = slope * rssi + intercept
+                    device[self.get_key_index("distance", self._devices_columns)] = "{:.2f}".format(10 ** log_distance)
+                    device[self._estimated_index] = "1"
+        else:
+            rssi_ref = rssi_values[0]
+            distance_ref = distance_values[0]
+            n = self._signal_propagation_constant
+            p0 = rssi_ref + 10 * n * np.log10(distance_ref)
+            for device_id, device in self._devices_dict.items():
+                if abs(int(device[self.get_key_index("tx_power", self._devices_columns)])) == 0:
+                    rssi = abs(int(device[self.get_key_index("rssi", self._devices_columns)]))
+                    log_distance = (p0 - rssi) / (10 * n)
+                    device[self.get_key_index("distance", self._devices_columns)] = "{:.2f}".format(10 ** log_distance)
+                    device[self._estimated_index] = "1"
 
     def calculate_missing_distances(self):
         """Calculates the missing distance value given information about other devices"""
@@ -442,15 +632,17 @@ class BleScannerInteractive:
 
         # Dummy loading screening while devices are being discovered
         await asyncio.gather(self.__discover_with_data(), self.__loading())
-        self._console.clear()
 
-        # Keep a live table going
-        with Live(self._table, console=self._console) as live:
+       # Keep a live table going
+        with Live(self._table, console=self._console, refresh_per_second=2) as live:
             live.update(self._table)
             while True:
-                self.__create_table()
+                self._table = Table()
+                for _, device_value in self._devices_columns.items():
+                    self._table.add_column(device_value)
                 await self.__discover_with_data()
                 live.update(self._table)
+                self._log_known_characteristics(live)
                 self.__write_current_device_list_csv()
 
     def run(self):
@@ -468,6 +660,10 @@ class BleScannerInteractive:
         #     await self._query_device(device_index)
 
 
-if __name__ == "__main__":
+def main():
     scanner = BleScannerInteractive(redacted_address=True)
     scanner.run()
+
+
+if __name__ == "__main__":
+    main()

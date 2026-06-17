@@ -1,6 +1,6 @@
 <h1 align="center">Bluetooth "Wall of Sheep"</h1>
 
-![Python](https://img.shields.io/badge/python-3.8+-blue)
+![Python](https://img.shields.io/badge/python-3.10+-blue)
 ![Issues](https://img.shields.io/github/issues/skittleson/bluetooth-wos)
 
 
@@ -25,6 +25,8 @@
 - Highlights persistent devices ("stick around")
 - Removes transient devices to handle address randomization
 - Detects and hides device MAC addresses for privacy
+- Decodes common service data passively (no GATT connection): Temperature,
+  Humidity, Battery Level, TX Power, Heart Rate, and Eddystone (TLM/UID/URL)
 
 ### 🔧 Configurable Behavior
 - Adjustable timeout for inactive devices
@@ -34,25 +36,41 @@
 ## 🚀 Quick Start
 
 ### ⚙️ Requirements
-- Python 3.8+
+- Python 3.10+
 - Linux or macOS (Bluetooth support)
-- `pip`, `uv`, and `pyinstaller`
+- [`uv`](https://docs.astral.sh/uv/)
 
+### 📦 Install globally
+
+Install as a global command with `uv`:
 
 ```bash
-pip install uv
+uv tool install .
+```
+
+Then run it from anywhere:
+
+```bash
+bluetooth-wos
+```
+
+To pick up local changes, reinstall:
+
+```bash
+uv tool install --reinstall .
+```
+
+### 🧪 Run from source
+
+```bash
 uv venv
 uv pip sync requirements.txt
-uv run index.py
+uv run bluetooth_wos.py
 ```
 
 ## Development
 
-`python -m  pylint $(git ls-files '*.py')`
-
-### 🛠️ Build Portable 
-
-`pyinstaller index.py -F -n bluetooth-wos`
+`python -m pylint $(git ls-files '*.py')`
 
 ## 🛣️ Roadmap
  
@@ -62,7 +80,7 @@ uv run index.py
  - [ ] Fingerprint devices that keep changing MAC addresses
  - [ ] Show adv data
  - [ ] Interactive way to go into service data
- - [ ] Resolve common service->characteristics such as temp/humidity
+ - [x] Resolve common service->characteristics such as temp/humidity
  - [ ] attempt to keep same indexes of current devices
  - [x] Load spinner on first load. It's boring to see nothing in a table
  - [ ] no coloring option
