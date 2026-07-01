@@ -1,7 +1,7 @@
 async-timeout==5.0.1
 bleak==0.22.3
 certifi==2025.1.31
-dbus-fast==2.32.0
+dbus-fast==2.32.0; platform_system == "Linux"
 idna==3.10
 requests==2.32.3
 rich==13.9.4
